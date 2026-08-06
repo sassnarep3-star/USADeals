@@ -1,168 +1,340 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SF FastBites: Chipotle & Wingstop Local Deal Finder</title>
+    <title>SF FastBites: Chipotle & Wingstop San Francisco Deal Finder</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        chipotle: {
+                            red: '#451415',
+                            light: '#fbf4f2',
+                            accent: '#a83232'
+                        },
+                        wingstop: {
+                            green: '#0b4d2c',
+                            light: '#f0f8f4',
+                            accent: '#12824c',
+                            yellow: '#f59e0b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome for beautiful icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome 6 CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #fcfbf7;
         }
-        .bg-pattern {
-            background-color: #dfdbd4;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%239C92AC' fill-opacity='0.15' d='M1 3h1v1H1V3zm2-2h1v1H2V1z'%3E%3C/path%3E%3C/svg%3E");
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
         }
-        .chipotle-green { color: #a4c639; }
-        .chipotle-burgundy { background-color: #451415; }
-        .wingstop-green { background-color: #115e3b; }
-        .wingstop-yellow { color: #f1c40f; }
-        
-        /* Terminal styling for logs */
-        .terminal {
-            background-color: #121824;
-            font-family: 'Courier New', Courier, monospace;
+        .bg-pattern {
+            background-color: #f8f6f0;
+            background-image: radial-gradient(#d1c7b7 0.75px, transparent 0.75px);
+            background-size: 16px 16px;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
     </style>
 </head>
-<body class="bg-pattern min-h-screen text-slate-800 antialiased">
+<body class="bg-pattern min-h-screen text-slate-800 antialiased flex flex-col justify-between">
 
-    <!-- Header Section -->
-    <header class="border-b border-amber-900/10 bg-white/85 backdrop-blur sticky top-0 z-40">
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Navigation / Header -->
+    <header class="border-b border-stone-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="h-12 w-12 rounded-2xl bg-amber-600 flex items-center justify-between p-2 shadow-md shadow-amber-600/20">
-                    <i class="fa-solid fa-utensils text-white text-xl mx-auto"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl font-extrabold text-slate-900 tracking-tight flex items-center">
-                        SF FastBites <span class="ml-2 text-xs bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider">San Francisco, CA</span>
-                    </h1>
-                    <p class="text-xs text-slate-500 font-medium">Chipotle & Wingstop Local Promo Registry</p>
-                </div>
+            <div class="flex items-center space-x-3.5">
+                <a href="#" class="flex items-center space-x-3">
+                    <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-amber-600 to-amber-800 flex items-center justify-center text-white text-xl shadow-md shadow-amber-700/20">
+                        <i class="fa-solid fa-utensils"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">SF FastBites</h1>
+                            <span class="text-[11px] bg-amber-100 text-amber-900 font-bold px-2.5 py-0.5 rounded-full border border-amber-300/60 uppercase tracking-wider">San Francisco, CA</span>
+                        </div>
+                        <p class="text-xs text-slate-500 font-medium">Chipotle & Wingstop Local Promo Registry</p>
+                    </div>
+                </a>
             </div>
             
-            <div class="flex items-center space-x-4">
-                <div class="hidden md:flex flex-col items-end">
-                    <span class="text-xs text-slate-400 uppercase tracking-widest font-semibold">Current Audit Date</span>
-                    <span class="text-sm font-bold text-slate-700 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200 mt-0.5 flex items-center gap-1.5">
+            <div class="flex items-center space-x-3">
+                <div class="hidden lg:flex flex-col items-end">
+                    <span class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Audit & Verification Date</span>
+                    <span class="text-xs font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200 mt-0.5 flex items-center gap-1.5 shadow-sm">
                         <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        August 6, 2026
+                        Thursday, August 6, 2026
                     </span>
                 </div>
-                <a href="#validator" class="bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow-lg shadow-amber-600/15 transition duration-150 flex items-center gap-2">
+                <a href="#validator" class="bg-amber-600 hover:bg-amber-700 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-xl shadow-md shadow-amber-600/20 transition duration-150 flex items-center gap-2">
                     <i class="fa-solid fa-shield-halved"></i>
-                    Validate Code
+                    <span>Verify Code</span>
                 </a>
             </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <!-- Hero/Disclaimer Localized Banner -->
-        <div class="bg-gradient-to-r from-amber-900 to-amber-950 rounded-3xl p-8 md:p-12 shadow-2xl text-white mb-10 relative overflow-hidden">
-            <div class="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+        <!-- Hero Header -->
+        <div class="bg-gradient-to-r from-stone-900 via-stone-950 to-amber-950 rounded-3xl p-6 sm:p-10 md:p-12 shadow-2xl text-white mb-8 relative overflow-hidden">
+            <div class="absolute inset-0 opacity-15 pointer-events-none bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:20px_20px]"></div>
+            
             <div class="max-w-3xl relative z-10">
-                <span class="bg-amber-500/20 border border-amber-400/20 text-amber-300 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                    <i class="fa-solid fa-location-crosshairs mr-1"></i> San Francisco Resident Edition
-                </span>
-                <h2 class="text-3xl md:text-5xl font-extrabold mt-4 leading-tight">
-                    Verified Food Deals For <span class="underline decoration-amber-400 underline-offset-4">Our City</span>.
+                <div class="flex flex-wrap items-center gap-2 mb-4">
+                    <span class="bg-amber-500/20 border border-amber-400/30 text-amber-300 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fa-solid fa-location-dot text-amber-400"></i> San Francisco Resident & Visitor Guide
+                    </span>
+                    <span class="bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-check"></i> 100% Active Offers Only
+                    </span>
+                </div>
+                
+                <h2 class="text-2xl sm:text-4xl md:text-5xl font-extrabold leading-tight text-white">
+                    Verified Food Deals For <span class="text-amber-400 underline decoration-amber-500/50 underline-offset-8">San Francisco</span>.
                 </h2>
-                <p class="text-slate-300 text-base md:text-lg mt-4 leading-relaxed font-light">
-                    Stop wasting time on fake or expired coupon codes. Every deal listed below is active, up-to-date for 
-                    <strong>August 6, 2026</strong>, and verified specifically for all <strong>8 Chipotle</strong> and 
-                    <strong>4 Wingstop</strong> locations across San Francisco, CA.
+                
+                <p class="text-stone-300 text-sm sm:text-base mt-4 leading-relaxed font-normal">
+                    No more fake coupon codes or expired vouchers. Every deal, promo code, and menu hack listed below is 
+                    <strong>manually audited and confirmed working for August 6, 2026</strong> across all 
+                    <strong>8 Chipotle</strong> and <strong>4 Wingstop</strong> locations in San Francisco.
                 </p>
-                <div class="flex flex-wrap gap-4 mt-8">
-                    <div class="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-xl text-sm border border-white/5">
-                        <i class="fa-solid fa-circle-check text-emerald-400"></i>
-                        <span>100% Checked with Official Sites</span>
+
+                <!-- 3-Step Beginner Quick Start Banner -->
+                <div class="mt-8 bg-stone-900/80 border border-amber-500/30 rounded-2xl p-4 sm:p-5">
+                    <div class="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider mb-3">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Beginner Quick-Start: 3 Steps to Save in SF
                     </div>
-                    <div class="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-xl text-sm border border-white/5">
-                        <i class="fa-solid fa-bolt text-amber-400"></i>
-                        <span>One-Click Verification Tool</span>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                        <div class="flex items-start gap-2.5 bg-stone-800/60 p-3 rounded-xl border border-stone-700">
+                            <span class="h-6 w-6 rounded-full bg-amber-500/20 text-amber-400 font-bold flex items-center justify-center shrink-0">1</span>
+                            <div>
+                                <span class="font-bold text-white block">Browse & Filter</span>
+                                <span class="text-stone-300">Pick Chipotle or Wingstop and search for your meal format.</span>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2.5 bg-stone-800/60 p-3 rounded-xl border border-stone-700">
+                            <span class="h-6 w-6 rounded-full bg-amber-500/20 text-amber-400 font-bold flex items-center justify-center shrink-0">2</span>
+                            <div>
+                                <span class="font-bold text-white block">Click Step-by-Step Guide</span>
+                                <span class="text-stone-300">Expand 'How to Redeem' for simple instructions and exact links.</span>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2.5 bg-stone-800/60 p-3 rounded-xl border border-stone-700">
+                            <span class="h-6 w-6 rounded-full bg-amber-500/20 text-amber-400 font-bold flex items-center justify-center shrink-0">3</span>
+                            <div>
+                                <span class="font-bold text-white block">Apply & Enjoy</span>
+                                <span class="text-stone-300">Copy the promo code or order the menu bundle on official apps.</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Navigation Tabs -->
-        <div class="flex border-b border-slate-200 mb-8 overflow-x-auto gap-2">
-            <button onclick="switchTab('deals')" id="tab-deals" class="tab-btn active px-6 py-3 border-b-2 border-amber-600 font-bold text-sm text-slate-800 transition whitespace-nowrap flex items-center gap-2">
-                <i class="fa-solid fa-fire text-amber-600"></i> Active Deals & Promos
+        <div class="flex border-b border-stone-300 mb-6 overflow-x-auto gap-2 text-sm font-semibold">
+            <button onclick="switchTab('deals')" id="tab-deals" class="tab-btn active px-5 py-3 border-b-2 border-amber-600 text-stone-900 flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-fire text-amber-600"></i> Active Deals & Codes (<span id="total-deals-badge">16</span>)
             </button>
-            <button onclick="switchTab('stores')" id="tab-stores" class="tab-btn px-6 py-3 border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-slate-800 transition whitespace-nowrap flex items-center gap-2">
-                <i class="fa-solid fa-map-location-dot"></i> SF Locations Directory
+            <button onclick="switchTab('stores')" id="tab-stores" class="tab-btn px-5 py-3 border-b-2 border-transparent text-stone-500 hover:text-stone-900 flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-map-location-dot"></i> SF Locations Directory (12 Stores)
             </button>
-            <button onclick="switchTab('submit')" id="tab-submit" class="tab-btn px-6 py-3 border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-slate-800 transition whitespace-nowrap flex items-center gap-2">
-                <i class="fa-solid fa-circle-plus"></i> Submit & Verify New Deal
+            <button onclick="switchTab('hacks')" id="tab-hacks" class="tab-btn px-5 py-3 border-b-2 border-transparent text-stone-500 hover:text-stone-900 flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-lightbulb text-amber-500"></i> SF Local Savings Guide
+            </button>
+            <button onclick="switchTab('submit')" id="tab-submit" class="tab-btn px-5 py-3 border-b-2 border-transparent text-stone-500 hover:text-stone-900 flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-circle-plus"></i> Submit New Deal
             </button>
         </div>
 
         <!-- DEALS TAB SECTION -->
         <section id="sect-deals" class="tab-sect block">
-            <!-- Filter Bar -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                <div class="flex flex-wrap items-center gap-2">
-                    <span class="text-xs text-slate-400 uppercase font-bold tracking-wider mr-2">Brand:</span>
-                    <button onclick="filterRestaurant('All')" class="rest-filter active bg-slate-900 text-white font-semibold text-xs px-4 py-2 rounded-xl transition duration-150">All Brands</button>
-                    <button onclick="filterRestaurant('Chipotle')" class="rest-filter bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs px-4 py-2 rounded-xl transition duration-150">Chipotle Only</button>
-                    <button onclick="filterRestaurant('Wingstop')" class="rest-filter bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs px-4 py-2 rounded-xl transition duration-150">Wingstop Only</button>
+            <!-- Search & Filter Controls -->
+            <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm space-y-4 mb-6">
+                <!-- Search input -->
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-stone-400"></i>
+                    <input type="text" id="deal-search-input" oninput="handleSearch(this.value)" placeholder="Search deals by keyword (e.g. 'burrito', 'boneless', 'student', 'free fries', 'guac', 'delivery')..." 
+                           class="w-full bg-stone-50 border border-stone-200 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium">
+                    <button onclick="clearSearch()" id="clear-search-btn" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold bg-stone-200 hover:bg-stone-300 text-stone-700 px-2.5 py-1 rounded-lg">Clear</button>
                 </div>
-                <div class="flex flex-wrap items-center gap-2">
-                    <span class="text-xs text-slate-400 uppercase font-bold tracking-wider mr-2">Deal Type:</span>
-                    <button onclick="filterType('All')" class="type-filter active bg-slate-900 text-white font-semibold text-xs px-4 py-2 rounded-xl transition duration-150">All Formats</button>
-                    <button onclick="filterType('Promo Code')" class="type-filter bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs px-4 py-2 rounded-xl transition duration-150">Promo Codes</button>
-                    <button onclick="filterType('Menu Deal')" class="type-filter bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs px-4 py-2 rounded-xl transition duration-150">Menu Deals</button>
-                    <button onclick="filterType('Rewards')" class="type-filter bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs px-4 py-2 rounded-xl transition duration-150">Rewards & Challenges</button>
+
+                <!-- Filters -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2 border-t border-stone-100">
+                    <!-- Brand Filter -->
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <span class="text-[11px] text-stone-400 uppercase font-bold tracking-wider mr-2"><i class="fa-solid fa-store mr-1"></i> Brand:</span>
+                        <button onclick="filterRestaurant('All')" class="rest-filter active bg-stone-900 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl transition">All Brands</button>
+                        <button onclick="filterRestaurant('Chipotle')" class="rest-filter bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5">
+                            <span class="h-2 w-2 rounded-full bg-red-700"></span> Chipotle (8)
+                        </button>
+                        <button onclick="filterRestaurant('Wingstop')" class="rest-filter bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5">
+                            <span class="h-2 w-2 rounded-full bg-emerald-700"></span> Wingstop (8)
+                        </button>
+                    </div>
+
+                    <!-- Type Filter -->
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <span class="text-[11px] text-stone-400 uppercase font-bold tracking-wider mr-2"><i class="fa-solid fa-tags mr-1"></i> Type:</span>
+                        <button onclick="filterType('All')" class="type-filter active bg-stone-900 text-white font-bold text-xs px-3 py-1.5 rounded-xl transition">All Formats</button>
+                        <button onclick="filterType('Promo Code')" class="type-filter bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs px-3 py-1.5 rounded-xl transition">Promo Codes</button>
+                        <button onclick="filterType('Menu Deal')" class="type-filter bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs px-3 py-1.5 rounded-xl transition">Menu Deals</button>
+                        <button onclick="filterType('Rewards')" class="type-filter bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs px-3 py-1.5 rounded-xl transition">Rewards / Sign-Up</button>
+                        <button onclick="filterType('Student Discount')" class="type-filter bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs px-3 py-1.5 rounded-xl transition">Student Deals</button>
+                        <button onclick="filterType('Survey Reward')" class="type-filter bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs px-3 py-1.5 rounded-xl transition">Receipt Surveys</button>
+                    </div>
                 </div>
             </div>
 
             <!-- Active Deals Grid -->
             <div id="deals-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Deal cards will be dynamically injected here -->
-                <div class="col-span-full py-10 text-center text-slate-500">
+                <div class="col-span-full py-16 text-center text-stone-500">
                     <i class="fa-solid fa-spinner animate-spin text-3xl mb-3 text-amber-600"></i>
-                    <p>Loading the latest deals registry...</p>
+                    <p class="font-semibold">Loading verified San Francisco promotions...</p>
                 </div>
             </div>
         </section>
 
         <!-- STORES TAB SECTION -->
         <section id="sect-stores" class="tab-sect hidden">
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 flex items-start gap-3 text-xs text-amber-900">
+                <i class="fa-solid fa-circle-info text-amber-700 text-base mt-0.5 shrink-0"></i>
+                <div>
+                    <strong>San Francisco Store Participation:</strong> All 8 Chipotle and 4 Wingstop locations inside San Francisco city limits participate in digital ordering, Rewards redemption, and verified menu specials. Check operating hours and call ahead if picking up late at night!
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Chipotle Locations -->
-                <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="h-10 w-10 chipotle-burgundy rounded-xl flex items-center justify-center text-white text-lg font-black">C</div>
-                        <div>
-                            <h3 class="font-extrabold text-lg text-slate-900">Official Chipotle SF Locations</h3>
-                            <p class="text-xs text-slate-500">8 participating outlets inside San Francisco city limits</p>
+                <div class="bg-white p-6 rounded-3xl border border-stone-200 shadow-sm">
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-stone-100">
+                        <div class="flex items-center gap-3">
+                            <div class="h-10 w-10 rounded-xl bg-red-950 text-white flex items-center justify-center font-black text-lg shadow-sm">C</div>
+                            <div>
+                                <h3 class="font-extrabold text-lg text-stone-900">Chipotle SF Locations (8)</h3>
+                                <p class="text-xs text-stone-500">San Francisco city stores & pickup hubs</p>
+                            </div>
                         </div>
+                        <a href="https://locations.chipotle.com/ca/san-francisco" target="_blank" class="text-xs font-bold text-amber-800 hover:underline flex items-center gap-1">
+                            Official Directory <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        </a>
                     </div>
-                    <div id="chipotle-stores-list" class="space-y-4 max-h-[550px] overflow-y-auto pr-2">
+                    <div id="chipotle-stores-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                         <!-- Chipotle store cards -->
                     </div>
                 </div>
 
                 <!-- Wingstop Locations -->
-                <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <div class="bg-white p-6 rounded-3xl border border-stone-200 shadow-sm">
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-stone-100">
+                        <div class="flex items-center gap-3">
+                            <div class="h-10 w-10 rounded-xl bg-emerald-900 text-white flex items-center justify-center font-black text-lg shadow-sm">W</div>
+                            <div>
+                                <h3 class="font-extrabold text-lg text-stone-900">Wingstop SF Locations (4)</h3>
+                                <p class="text-xs text-stone-500">San Francisco city stores & late-night wings</p>
+                            </div>
+                        </div>
+                        <a href="https://locations.wingstop.com/us/ca/san-francisco" target="_blank" class="text-xs font-bold text-emerald-800 hover:underline flex items-center gap-1">
+                            Official Directory <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        </a>
+                    </div>
+                    <div id="wingstop-stores-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                        <!-- Wingstop store cards -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SF LOCAL HACKS & SAVINGS GUIDE TAB -->
+        <section id="sect-hacks" class="tab-sect hidden">
+            <div class="max-w-4xl mx-auto space-y-6">
+                <div class="bg-white p-8 rounded-3xl border border-stone-200 shadow-sm">
                     <div class="flex items-center gap-3 mb-6">
-                        <div class="h-10 w-10 wingstop-green rounded-xl flex items-center justify-center text-white text-lg font-black">W</div>
+                        <div class="h-12 w-12 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-coins"></i>
+                        </div>
                         <div>
-                            <h3 class="font-extrabold text-lg text-slate-900">Official Wingstop SF Locations</h3>
-                            <p class="text-xs text-slate-500">4 participating outlets inside San Francisco city limits</p>
+                            <h3 class="text-xl font-extrabold text-stone-900">San Francisco Fast Casual Insider Savings Guide</h3>
+                            <p class="text-xs text-stone-500">Pro-tips on navigating SF local health ordinances, delivery fees, and maximizing promo codes</p>
                         </div>
                     </div>
-                    <div id="wingstop-stores-list" class="space-y-4 max-h-[550px] overflow-y-auto pr-2">
-                        <!-- Wingstop store cards -->
+
+                    <div class="space-y-4 text-sm text-stone-700 leading-relaxed">
+                        <div class="bg-stone-50 p-5 rounded-2xl border border-stone-200">
+                            <h4 class="font-bold text-stone-900 flex items-center gap-2">
+                                <span class="bg-amber-600 text-white h-5 w-5 rounded-full flex items-center justify-center text-xs">1</span>
+                                Order Direct Digital Pickup to Beat the "SF Mandate Fee"
+                            </h4>
+                            <p class="text-xs text-stone-600 mt-2">
+                                Third-party apps like DoorDash and Uber Eats add hefty delivery surcharges and SF health mandate fees that can increase your meal cost by $6–$10. Ordering direct through Chipotle.com or Wingstop.com for <strong>In-Store Pickup</strong> completely bypasses delivery markups while still letting you use promo codes!
+                            </p>
+                        </div>
+
+                        <div class="bg-stone-50 p-5 rounded-2xl border border-stone-200">
+                            <h4 class="font-bold text-stone-900 flex items-center gap-2">
+                                <span class="bg-amber-600 text-white h-5 w-5 rounded-full flex items-center justify-center text-xs">2</span>
+                                Stack Chipotle Rewards on Top of Active Coupon Codes
+                            </h4>
+                            <p class="text-xs text-stone-600 mt-2">
+                                In 2026, Chipotle's relaunched <em>Rewards on Repeat</em> program allows members to redeem earned points (such as free chips, guac, or queso) on the exact same digital order where you apply a promotional code (like <code class="bg-stone-200 px-1 rounded font-bold font-mono">TAGTEAM</code>). Always scan or log in before ordering.
+                            </p>
+                        </div>
+
+                        <div class="bg-stone-50 p-5 rounded-2xl border border-stone-200">
+                            <h4 class="font-bold text-stone-900 flex items-center gap-2">
+                                <span class="bg-amber-600 text-white h-5 w-5 rounded-full flex items-center justify-center text-xs">3</span>
+                                Maximize Wingstop Protein per Dollar on Mondays & Tuesdays
+                            </h4>
+                            <p class="text-xs text-stone-600 mt-2">
+                                San Francisco Wingstop locations charge 80¢ per boneless wing on Mondays and Tuesdays. Ordering a 15-piece boneless pack costs just $12.00, providing over 80g of high-quality protein for under $15 in one of America's most expensive dining cities.
+                            </p>
+                        </div>
+
+                        <div class="bg-stone-50 p-5 rounded-2xl border border-stone-200">
+                            <h4 class="font-bold text-stone-900 flex items-center gap-2">
+                                <span class="bg-amber-600 text-white h-5 w-5 rounded-full flex items-center justify-center text-xs">4</span>
+                                SF Students: Instant 1,000 Points with Chipotle U
+                            </h4>
+                            <p class="text-xs text-stone-600 mt-2">
+                                Students at SF State University, USF, UCSF, CCSF, and other local schools can link their ID.me account to get 1,000 bonus points immediately upon sign-up and earn 12 points per dollar spent instead of 10.
+                            </p>
+                        </div>
+
+                        <div class="bg-stone-50 p-5 rounded-2xl border border-stone-200">
+                            <h4 class="font-bold text-stone-900 flex items-center gap-2">
+                                <span class="bg-amber-600 text-white h-5 w-5 rounded-full flex items-center justify-center text-xs">5</span>
+                                Don't Throw Away SF Receipts: Instant Free Fries & Sweepstakes
+                            </h4>
+                            <p class="text-xs text-stone-600 mt-2">
+                                Both Chipotle and Wingstop receipts in SF contain unique survey survey codes. Wingstop's receipt survey at <a href="https://www.tellwingstop.com" target="_blank" class="text-emerald-700 font-bold underline">tellwingstop.com</a> yields a coupon for Free Fresh-Cut Fries or $5 off next time, while Chipotle's survey at <a href="https://www.chipotlefeedback.com" target="_blank" class="text-amber-800 font-bold underline">chipotlefeedback.com</a> enters you into a monthly drawing for 52 Free Burritos.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -170,138 +342,146 @@
 
         <!-- SUBMIT DEAL TAB SECTION -->
         <section id="sect-submit" class="tab-sect hidden">
-            <div class="max-w-3xl mx-auto bg-white rounded-3xl border border-slate-100 shadow-xl p-8">
+            <div class="max-w-3xl mx-auto bg-white rounded-3xl border border-stone-200 shadow-xl p-6 sm:p-8">
                 <div class="text-center mb-8">
-                    <div class="h-14 w-14 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-xl mx-auto mb-4">
+                    <div class="h-14 w-14 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-xl mx-auto mb-3 shadow-inner">
                         <i class="fa-solid fa-hands-clapping"></i>
                     </div>
-                    <h3 class="text-2xl font-extrabold text-slate-900">Share a Deal with the SF Community</h3>
-                    <p class="text-slate-500 text-sm mt-1">Submit a newly discovered Chipotle or Wingstop promotion. Our smart verification engine will check it in real-time before adding it to the active deals board!</p>
+                    <h3 class="text-2xl font-extrabold text-stone-900">Share a Deal with the SF Community</h3>
+                    <p class="text-stone-500 text-xs sm:text-sm mt-1">Submit a newly discovered Chipotle or Wingstop promotion. Our automated verifier audits it against official SF location databases before publishing!</p>
                 </div>
 
-                <form id="submit-deal-form" onsubmit="handleDealSubmit(event)" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <form id="submit-deal-form" onsubmit="handleDealSubmit(event)" class="space-y-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Restaurant Brand</label>
-                            <select id="sub-restaurant" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium">
+                            <label class="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Restaurant Brand *</label>
+                            <select id="sub-restaurant" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-semibold">
                                 <option value="Chipotle">Chipotle Mexican Grill</option>
                                 <option value="Wingstop">Wingstop</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Deal Format</label>
-                            <select id="sub-type" onchange="toggleCodeRequired(this.value)" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium">
+                            <label class="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Deal Format *</label>
+                            <select id="sub-type" onchange="toggleCodeRequired(this.value)" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-semibold">
                                 <option value="Promo Code">Digital Promo Code</option>
-                                <option value="Menu Deal">In-App Menu Deal (No Code)</option>
-                                <option value="Rewards">Rewards Club/Challenge</option>
+                                <option value="Menu Deal">Menu Deal / In-App Special (No Code)</option>
+                                <option value="Rewards">Rewards Club / Sign-Up Offer</option>
+                                <option value="Student Discount">Student Discount</option>
+                                <option value="Survey Reward">Receipt Survey Reward</option>
                             </select>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Promo Code (If applicable)</label>
-                        <input type="text" id="sub-code" placeholder="e.g. WING2026 or TAGTEAM" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-mono font-bold placeholder:font-sans placeholder:font-normal">
+                        <label class="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Promo Code (If applicable)</label>
+                        <input type="text" id="sub-code" placeholder="e.g. WING2026 or TAGTEAM" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-mono font-bold uppercase placeholder:font-sans placeholder:font-normal">
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Deal Title / Offer Summary</label>
-                        <input type="text" id="sub-title" required placeholder="e.g. Free Chips and Guac with Burrito Purchase" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500">
+                        <label class="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Deal Title / Offer Summary *</label>
+                        <input type="text" id="sub-title" required placeholder="e.g. Free Chips & Guacamole with Burrito Purchase" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium">
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Detailed Coupon Description & Fine Print</label>
-                        <textarea id="sub-description" required rows="3" placeholder="Explain the terms. What needs to be added to the cart? Any minimum spend limits?" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"></textarea>
+                        <label class="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Estimated Savings (e.g. '$5.00 Off' or 'Free Regular Fries')</label>
+                        <input type="text" id="sub-savings" placeholder="e.g. $4.95 Value or 20% Discount" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500">
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Official Promotion URL / Link</label>
-                        <input type="url" id="sub-source" placeholder="e.g. https://www.chipotle.com/2xko" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500">
-                        <span class="text-xs text-slate-400 mt-1.5 block">Providing an official site source allows users to review original terms.</span>
+                        <label class="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Detailed Instructions & Terms *</label>
+                        <textarea id="sub-description" required rows="3" placeholder="Explain the terms. What items need to be added? Any minimum order spend ($15+ min)? Are SF locations eligible?" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"></textarea>
                     </div>
 
-                    <div id="submit-loading-status" class="hidden bg-slate-50 border border-slate-100 rounded-2xl p-4">
+                    <div>
+                        <label class="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Official Promotion URL / Proof Link</label>
+                        <input type="url" id="sub-source" placeholder="e.g. https://www.chipotle.com/rewards" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500">
+                        <span class="text-[11px] text-stone-400 mt-1 block">Official links help beginners verify the original terms and company announcements.</span>
+                    </div>
+
+                    <div id="submit-loading-status" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-4">
                         <div class="flex items-center gap-3">
-                            <i class="fa-solid fa-spinner animate-spin text-amber-600 text-lg"></i>
-                            <span class="text-xs font-semibold text-slate-600">Verifying code with California regional servers...</span>
+                            <i class="fa-solid fa-spinner animate-spin text-amber-700 text-lg"></i>
+                            <span class="text-xs font-bold text-amber-900">Validating promotion against San Francisco restaurant servers...</span>
                         </div>
                     </div>
 
-                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 px-6 rounded-2xl transition shadow-lg flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-paper-plane"></i> Submit & Launch Automated Verify Check
+                    <button type="submit" class="w-full bg-stone-900 hover:bg-stone-800 text-white font-bold py-3.5 px-6 rounded-2xl transition shadow-lg flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> Submit & Run Automatic Audit Check
                     </button>
                 </form>
             </div>
         </section>
 
         <!-- DEDICATED VALIDATOR / CHECKER UTILITY -->
-        <section id="validator" class="mt-12 bg-white rounded-3xl border border-slate-100 shadow-xl p-8 max-w-4xl mx-auto scroll-mt-24">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-100">
-                <div class="flex items-center gap-3">
-                    <div class="h-12 w-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center text-xl shadow-inner">
+        <section id="validator" class="mt-12 bg-white rounded-3xl border border-stone-200 shadow-xl p-6 sm:p-8 max-w-4xl mx-auto scroll-mt-24">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-stone-100">
+                <div class="flex items-center gap-3.5">
+                    <div class="h-12 w-12 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-xl shadow-inner">
                         <i class="fa-solid fa-terminal"></i>
                     </div>
                     <div>
-                        <h3 class="text-xl font-extrabold text-slate-900">FastBites Automated Code Validator</h3>
-                        <p class="text-slate-500 text-xs mt-0.5">Test codes live against regional San Francisco locations, syntax, and official databases</p>
+                        <h3 class="text-xl font-extrabold text-stone-900">FastBites Automated Code Validator</h3>
+                        <p class="text-stone-500 text-xs mt-0.5">Test any promo code live against SF store eligibility, syntax, and active company databases</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-2 text-xs font-bold text-slate-400">
+                <div class="flex items-center gap-2 text-xs font-bold text-stone-500 bg-stone-100 px-3 py-1.5 rounded-xl border border-stone-200">
                     <span class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    VERIFIER ENGINE ONLINE
+                    SF VERIFIER ONLINE (Aug 6, 2026)
                 </div>
             </div>
 
             <!-- Validator Form -->
             <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mt-6">
                 <div class="md:col-span-3">
-                    <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Brand</label>
-                    <select id="val-restaurant" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none font-semibold">
-                        <option value="Chipotle">Chipotle</option>
+                    <label class="block text-[10px] font-extrabold text-stone-400 uppercase tracking-widest mb-1.5">Brand</label>
+                    <select id="val-restaurant" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none font-bold">
+                        <option value="Chipotle">Chipotle Mexican Grill</option>
                         <option value="Wingstop">Wingstop</option>
                     </select>
                 </div>
                 <div class="md:col-span-6">
-                    <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Enter Promo Code</label>
-                    <input type="text" id="val-code" placeholder="e.g. WING2026 or DDCHIP50" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none font-mono font-extrabold tracking-wide uppercase">
+                    <label class="block text-[10px] font-extrabold text-stone-400 uppercase tracking-widest mb-1.5">Enter Promo Code</label>
+                    <input type="text" id="val-code" placeholder="e.g. TAGTEAM, WING2026, or DDCHIP50" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none font-mono font-extrabold tracking-wide uppercase placeholder:font-sans placeholder:font-normal">
                 </div>
                 <div class="md:col-span-3 flex items-end">
-                    <button onclick="runCustomValidator()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-6 rounded-xl transition duration-150 flex items-center justify-center gap-2 shadow-lg shadow-amber-600/10">
-                        <i class="fa-solid fa-play"></i> Run Audit Check
+                    <button onclick="runCustomValidator()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-5 rounded-xl transition duration-150 flex items-center justify-center gap-2 shadow-lg shadow-amber-600/10">
+                        <i class="fa-solid fa-play"></i> Run Live Audit
                     </button>
                 </div>
             </div>
 
             <!-- Live Diagnostic Terminal Panel -->
             <div id="terminal-panel" class="hidden mt-6">
-                <div class="terminal text-emerald-400 p-5 rounded-2xl overflow-hidden shadow-inner text-xs leading-relaxed border border-slate-800">
-                    <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800 text-slate-500 select-none">
+                <div class="bg-slate-950 text-emerald-400 p-5 rounded-2xl overflow-hidden shadow-2xl text-xs leading-relaxed border border-slate-800">
+                    <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800 text-slate-400 select-none">
                         <div class="flex items-center gap-2 font-mono">
-                            <span class="h-3 w-3 rounded-full bg-rose-500/80"></span>
-                            <span class="h-3 w-3 rounded-full bg-amber-500/80"></span>
-                            <span class="h-3 w-3 rounded-full bg-emerald-500/80"></span>
-                            <span class="ml-2">validator_diagnostic_session.sh</span>
+                            <span class="h-3 w-3 rounded-full bg-rose-500/90"></span>
+                            <span class="h-3 w-3 rounded-full bg-amber-500/90"></span>
+                            <span class="h-3 w-3 rounded-full bg-emerald-500/90"></span>
+                            <span class="ml-2 font-semibold text-slate-300">sf_promocode_validator.sh</span>
                         </div>
-                        <span id="terminal-timer">0.0s</span>
+                        <span id="terminal-timer" class="font-mono text-slate-400">0.0s</span>
                     </div>
-                    <div id="terminal-output" class="space-y-1 font-mono min-h-[160px] max-h-[300px] overflow-y-auto">
+                    <div id="terminal-output" class="space-y-1 font-mono min-h-[160px] max-h-[280px] overflow-y-auto custom-scrollbar">
                         <!-- Real-time logs stream here -->
                     </div>
                 </div>
 
                 <!-- Validation Result Card -->
-                <div id="validation-result-card" class="hidden mt-4 bg-slate-50 border border-slate-200 rounded-2xl p-5">
+                <div id="validation-result-card" class="hidden mt-4 bg-stone-50 border border-stone-200 rounded-2xl p-5">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div class="flex items-start gap-4">
-                            <div id="val-result-icon" class="h-12 w-12 rounded-xl flex items-center justify-center text-lg mt-0.5"></div>
+                            <div id="val-result-icon" class="h-12 w-12 rounded-xl flex items-center justify-center text-lg mt-0.5 shrink-0"></div>
                             <div>
-                                <h4 id="val-result-title" class="font-extrabold text-slate-950 text-base">---</h4>
-                                <p id="val-result-exclusions" class="text-xs text-slate-500 mt-1">---</p>
+                                <h4 id="val-result-title" class="font-extrabold text-stone-950 text-base">---</h4>
+                                <div id="val-result-savings" class="text-xs font-bold text-amber-800 mt-0.5"></div>
+                                <p id="val-result-exclusions" class="text-xs text-stone-500 mt-1 leading-relaxed">---</p>
                                 <div class="flex flex-wrap gap-2 mt-3" id="val-result-badges">
                                     <!-- Badges dynamically injected -->
                                 </div>
                             </div>
                         </div>
-                        <div id="val-result-action" class="flex flex-col gap-2 min-w-[160px]">
+                        <div id="val-result-action" class="flex flex-col gap-2 min-w-[170px] shrink-0">
                             <!-- Direct CTA link -->
                         </div>
                     </div>
@@ -311,38 +491,68 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-slate-900 text-slate-400 py-12 mt-20 border-t border-slate-800 text-xs">
+    <footer class="bg-stone-950 text-stone-400 py-12 mt-16 border-t border-stone-800 text-xs">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-800 pb-8 mb-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-stone-800 pb-8 mb-8">
                 <div>
-                    <h4 class="text-white font-extrabold text-base tracking-tight">SF FastBites Local Deal Finder</h4>
-                    <p class="text-slate-500 mt-1 font-medium">A regional community project tracking certified promotions for fast casual landmarks.</p>
+                    <h4 class="text-white font-extrabold text-base tracking-tight flex items-center gap-2">
+                        <i class="fa-solid fa-utensils text-amber-500"></i> SF FastBites Deal Finder
+                    </h4>
+                    <p class="text-stone-400 mt-1 font-normal max-w-xl">
+                        A curated community research directory providing audited food promotions for San Francisco, CA.
+                    </p>
                 </div>
-                <div class="flex items-center gap-4">
-                    <a href="https://www.chipotle.com" target="_blank" class="hover:text-white transition font-semibold">Chipotle Official</a>
+                <div class="flex flex-wrap items-center gap-4 text-xs font-semibold text-stone-300">
+                    <a href="https://www.chipotle.com" target="_blank" class="hover:text-white transition flex items-center gap-1">Chipotle.com <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>
                     <span>•</span>
-                    <a href="https://www.wingstop.com" target="_blank" class="hover:text-white transition font-semibold">Wingstop Official</a>
+                    <a href="https://www.wingstop.com" target="_blank" class="hover:text-white transition flex items-center gap-1">Wingstop.com <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>
                     <span>•</span>
-                    <a href="#validator" class="hover:text-white transition font-semibold">Automated Validator</a>
+                    <a href="#validator" class="hover:text-white transition">Live Verifier</a>
                 </div>
             </div>
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 text-slate-500">
-                <p>© 2026 SF FastBites Team. This website is a research directory. All brand names, logos, trademarks, and promo assets are the property of their respective owners.</p>
-                <p class="font-mono">BUILD VERSION: 1.0.4-RELEASE</p>
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 text-stone-500 text-[11px]">
+                <p>© 2026 SF FastBites. All brand names, logos, menus, and trademarks belong to Chipotle Mexican Grill, Inc. and Wingstop Restaurants, Inc.</p>
+                <p class="font-mono text-stone-400">DATA AUDITED: 2026-08-06 (SF PACIFIC TIME)</p>
             </div>
         </div>
     </footer>
 
-    <!-- Interactive JS Scripts -->
+    <!-- Interactive JavaScript Engine -->
     <script>
         let allDeals = [];
         let filterRes = 'All';
         let filterTypeVal = 'All';
+        let searchQuery = '';
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchDeals();
             loadStores();
         });
+
+        // Toast feedback popup
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-stone-900 text-emerald-400 border-emerald-500/40' : 'bg-stone-900 text-amber-400 border-amber-500/40';
+            const icon = type === 'success' ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-info';
+            
+            toast.className = `${bgClass} border shadow-2xl rounded-2xl px-4 py-3 text-xs font-bold flex items-center gap-2.5 transition-all duration-300 opacity-0 translate-y-2 pointer-events-auto`;
+            toast.innerHTML = `<i class="${icon} text-sm"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-y-2');
+                toast.classList.add('opacity-100', 'translate-y-0');
+            }, 10);
+
+            // Animate out
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
 
         // Toggle promo code input required attribute based on format selector
         function toggleCodeRequired(val) {
@@ -354,7 +564,7 @@
                 codeInput.classList.remove('opacity-50');
             } else {
                 codeInput.required = false;
-                codeInput.placeholder = 'No Code Required (Menu Deal)';
+                codeInput.placeholder = `No Code Needed (${val})`;
                 codeInput.value = '';
                 codeInput.disabled = true;
                 codeInput.classList.add('opacity-50');
@@ -366,29 +576,46 @@
             try {
                 const response = await fetch('/api/deals');
                 allDeals = await response.json();
+                document.getElementById('total-deals-badge').innerText = allDeals.length;
                 renderDeals();
             } catch (err) {
                 console.error("Error fetching deals:", err);
                 document.getElementById('deals-grid').innerHTML = `
-                    <div class="col-span-full bg-rose-50 border border-rose-100 rounded-2xl p-6 text-center text-rose-700">
+                    <div class="col-span-full bg-rose-50 border border-rose-200 rounded-2xl p-6 text-center text-rose-800">
                         <i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i>
-                        <p class="font-bold">Failed to connect to Local Registry</p>
-                        <p class="text-xs text-rose-500 mt-1">Make sure the Python server is running and reload the page.</p>
+                        <p class="font-bold">Failed to load deals registry</p>
+                        <p class="text-xs text-rose-600 mt-1">Please ensure the Flask backend server is running.</p>
                     </div>
                 `;
             }
         }
 
-        // Filter and Render Deals
+        // Search & Filter Handlers
+        function handleSearch(val) {
+            searchQuery = val.trim().toLowerCase();
+            const clearBtn = document.getElementById('clear-search-btn');
+            if (searchQuery) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+            renderDeals();
+        }
+
+        function clearSearch() {
+            document.getElementById('deal-search-input').value = '';
+            handleSearch('');
+        }
+
         function filterRestaurant(rest) {
             filterRes = rest;
             document.querySelectorAll('.rest-filter').forEach(btn => {
                 if (btn.innerText.includes(rest) || (rest === 'All' && btn.innerText.includes('All'))) {
-                    btn.classList.add('bg-slate-900', 'text-white');
-                    btn.classList.remove('bg-slate-100', 'text-slate-700');
+                    btn.classList.add('bg-stone-900', 'text-white');
+                    btn.classList.remove('bg-stone-100', 'text-stone-700');
                 } else {
-                    btn.classList.remove('bg-slate-900', 'text-white');
-                    btn.classList.add('bg-slate-100', 'text-slate-700');
+                    btn.classList.remove('bg-stone-900', 'text-white');
+                    btn.classList.add('bg-stone-100', 'text-stone-700');
                 }
             });
             renderDeals();
@@ -398,11 +625,11 @@
             filterTypeVal = type;
             document.querySelectorAll('.type-filter').forEach(btn => {
                 if (btn.innerText.toLowerCase().includes(type.toLowerCase()) || (type === 'All' && btn.innerText.includes('All'))) {
-                    btn.classList.add('bg-slate-900', 'text-white');
-                    btn.classList.remove('bg-slate-100', 'text-slate-700');
+                    btn.classList.add('bg-stone-900', 'text-white');
+                    btn.classList.remove('bg-stone-100', 'text-stone-700');
                 } else {
-                    btn.classList.remove('bg-slate-900', 'text-white');
-                    btn.classList.add('bg-slate-100', 'text-slate-700');
+                    btn.classList.remove('bg-stone-900', 'text-white');
+                    btn.classList.add('bg-stone-100', 'text-stone-700');
                 }
             });
             renderDeals();
@@ -410,113 +637,146 @@
 
         function renderDeals() {
             const grid = document.getElementById('deals-grid');
+            
             const filtered = allDeals.filter(deal => {
                 const matchRest = filterRes === 'All' || deal.restaurant === filterRes;
                 const matchType = filterTypeVal === 'All' || deal.type === filterTypeVal;
-                return matchRest && matchType;
+                
+                let matchSearch = true;
+                if (searchQuery) {
+                    const haystack = `${deal.title} ${deal.description} ${deal.code} ${deal.restaurant} ${deal.type} ${deal.sf_details || ''}`.toLowerCase();
+                    matchSearch = haystack.includes(searchQuery);
+                }
+                
+                return matchRest && matchType && matchSearch;
             });
 
             if (filtered.length === 0) {
                 grid.innerHTML = `
-                    <div class="col-span-full bg-slate-50 border border-slate-200 rounded-3xl py-12 text-center text-slate-500">
-                        <i class="fa-solid fa-face-frown text-3xl mb-3 text-slate-300"></i>
-                        <p class="font-bold">No Promotions match your selected filters</p>
-                        <p class="text-xs text-slate-400 mt-1">Try switching back to 'All Brands' or 'All Formats'.</p>
+                    <div class="col-span-full bg-white border border-stone-200 rounded-3xl py-16 text-center text-stone-500 shadow-sm">
+                        <i class="fa-solid fa-filter-circle-xmark text-4xl mb-3 text-stone-300"></i>
+                        <p class="font-extrabold text-stone-800 text-lg">No active deals matched your filter</p>
+                        <p class="text-xs text-stone-400 mt-1">Try clearing your search keyword or selecting 'All Brands' / 'All Formats'.</p>
+                        <button onclick="clearAllFilters()" class="mt-4 bg-stone-900 text-white font-bold text-xs px-4 py-2 rounded-xl">Reset All Filters</button>
                     </div>
                 `;
                 return;
             }
 
             grid.innerHTML = filtered.map(deal => {
-                // Style properties based on restaurant
-                const brandColor = deal.restaurant === 'Chipotle' ? 'text-amber-800' : 'text-emerald-700';
-                const brandBadgeBg = deal.restaurant === 'Chipotle' ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-950';
+                // Restaurant branding styles
+                const isChipotle = deal.restaurant === 'Chipotle';
+                const brandBadgeBg = isChipotle ? 'bg-red-100 text-red-950 border border-red-200' : 'bg-emerald-100 text-emerald-950 border border-emerald-200';
                 
                 // Status badge
                 let statusBadge = '';
                 if (deal.status === 'verified') {
-                    statusBadge = `<span class="bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
-                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Verified Active
+                    statusBadge = `<span class="bg-emerald-50 border border-emerald-300 text-emerald-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-sm">
+                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Verified Working
                     </span>`;
                 } else if (deal.status === 'likely_active') {
-                    statusBadge = `<span class="bg-amber-500/10 border border-amber-500/20 text-amber-700 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
-                        <span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span> Likely Active
+                    statusBadge = `<span class="bg-amber-50 border border-amber-300 text-amber-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-sm">
+                        <span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span> Active / Likely Valid
                     </span>`;
                 } else {
-                    statusBadge = `<span class="bg-slate-100 border border-slate-200 text-slate-500 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
-                        <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span> Unverified/Limited
+                    statusBadge = `<span class="bg-stone-100 border border-stone-300 text-stone-600 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
+                        <span class="h-1.5 w-1.5 rounded-full bg-stone-400"></span> Unverified
                     </span>`;
                 }
 
-                // Promo code display logic
-                const isNoCode = !deal.code || deal.code === 'No Code Required' || deal.code === 'Opt-In in App';
-                const codeBlock = isNoCode
-                    ? `<div class="bg-slate-100 border border-slate-200 text-slate-500 font-bold px-3 py-1.5 rounded-xl text-xs select-none">
-                         ${deal.code || 'No Code Required'}
-                       </div>`
-                    : `<div class="flex items-center gap-1 bg-amber-50 border border-amber-200 p-0.5 rounded-xl overflow-hidden shadow-inner">
-                         <span class="font-mono font-extrabold px-3 py-1 text-slate-800 tracking-wide text-sm">${deal.code}</span>
-                         <button onclick="copyCode(this, '${deal.code}')" class="bg-white hover:bg-amber-100 text-slate-700 hover:text-amber-900 border border-amber-200 font-bold text-xs px-2.5 py-1 rounded-lg transition active:scale-95 duration-100 flex items-center gap-1">
-                           <i class="fa-regular fa-copy"></i> Copy
-                         </button>
-                       </div>`;
+                // Promo code block display
+                const isPromoCode = deal.type === 'Promo Code' && deal.code && !['No Code Required', 'Opt-In in App', 'Sign-Up Bonus', 'ID.me Verification', 'Receipt Survey Code'].includes(deal.code);
+                
+                let codeBlock = '';
+                if (isPromoCode) {
+                    codeBlock = `
+                        <div class="flex items-center gap-1 bg-amber-50 border border-amber-300/80 p-0.5 rounded-xl overflow-hidden shadow-inner">
+                            <span class="font-mono font-extrabold px-3 py-1 text-stone-900 tracking-wide text-xs sm:text-sm select-all">${deal.code}</span>
+                            <button onclick="copyCode(this, '${deal.code}')" class="bg-white hover:bg-amber-100 text-stone-800 border border-amber-200 font-bold text-xs px-2.5 py-1 rounded-lg transition active:scale-95 duration-100 flex items-center gap-1">
+                                <i class="fa-regular fa-copy"></i> Copy
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    codeBlock = `
+                        <div class="bg-stone-100 border border-stone-200 text-stone-600 font-bold px-3 py-1.5 rounded-xl text-xs select-none">
+                            <i class="fa-solid fa-circle-check text-stone-400 mr-1"></i> ${deal.code || 'No Code Required'}
+                        </div>
+                    `;
+                }
 
                 return `
-                    <div class="bg-white rounded-3xl border border-slate-100 shadow-md hover:shadow-xl transition-all duration-300 p-6 flex flex-col justify-between group">
+                    <div class="bg-white rounded-3xl border border-stone-200 shadow-sm hover:shadow-xl transition-all duration-300 p-6 flex flex-col justify-between group">
                         <div>
                             <!-- Card Header -->
-                            <div class="flex items-center justify-between gap-2 mb-4">
-                                <div class="flex items-center gap-2">
-                                    <span class="${brandBadgeBg} text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-widest">${deal.restaurant}</span>
-                                    <span class="bg-slate-100 text-slate-600 text-[10px] font-semibold px-2.5 py-1 rounded-lg">${deal.type}</span>
+                            <div class="flex items-center justify-between gap-2 mb-3">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="${brandBadgeBg} text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider">${deal.restaurant}</span>
+                                    <span class="bg-stone-100 text-stone-700 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-stone-200">${deal.type}</span>
                                 </div>
                                 ${statusBadge}
                             </div>
 
                             <!-- Title -->
-                            <h3 class="text-lg font-bold text-slate-900 group-hover:text-amber-700 transition-colors duration-200">${deal.title}</h3>
-                            <p class="text-sm text-slate-600 mt-2 leading-relaxed">${deal.description}</p>
+                            <h3 class="text-lg font-extrabold text-stone-900 group-hover:text-amber-700 transition-colors duration-200">${deal.title}</h3>
+                            
+                            <!-- Savings callout -->
+                            ${deal.savings ? `
+                                <div class="mt-2 inline-flex items-center gap-1.5 bg-amber-500/10 text-amber-900 font-bold text-xs px-2.5 py-1 rounded-lg border border-amber-500/20">
+                                    <i class="fa-solid fa-tag text-amber-700"></i>
+                                    <span>${deal.savings}</span>
+                                </div>
+                            ` : ''}
+
+                            <!-- Description -->
+                            <p class="text-xs sm:text-sm text-stone-600 mt-2.5 leading-relaxed font-normal">${deal.description}</p>
 
                             <!-- SF Local Specific Check -->
-                            <div class="mt-4 bg-emerald-50/50 border border-emerald-200/50 p-3 rounded-2xl flex items-start gap-2.5">
-                                <div class="h-5 w-5 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs mt-0.5 shrink-0">
+                            <div class="mt-4 bg-emerald-50/70 border border-emerald-200/80 p-3 rounded-2xl flex items-start gap-2.5 text-xs">
+                                <div class="h-5 w-5 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-[10px] mt-0.5 shrink-0">
                                     <i class="fa-solid fa-location-dot"></i>
                                 </div>
                                 <div>
-                                    <h4 class="text-xs font-bold text-slate-900">San Francisco Regional Match</h4>
-                                    <p class="text-slate-500 text-xs mt-0.5 leading-relaxed">${deal.sf_details}</p>
+                                    <span class="font-bold text-stone-900 block">San Francisco Store Verification</span>
+                                    <p class="text-stone-600 mt-0.5 leading-relaxed font-normal">${deal.sf_details}</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Card Footer -->
-                        <div class="mt-6 border-t border-slate-50 pt-4 flex items-center justify-between gap-4">
-                            <div>
-                                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Checked & Audited</span>
-                                <span class="text-xs text-slate-600 font-medium">${deal.last_verified}</span>
+                        <!-- Card Action & Guide Footer -->
+                        <div class="mt-6 pt-4 border-t border-stone-100">
+                            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                                <div class="text-[11px] text-stone-500">
+                                    <span class="text-[10px] text-stone-400 font-bold uppercase tracking-wider block">Official Expiration</span>
+                                    <span class="font-semibold text-stone-700 flex items-center gap-1">
+                                        <i class="fa-regular fa-calendar-check text-stone-400"></i> ${deal.expiration_date || 'Active 2026'}
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    ${isPromoCode ? `
+                                        <button onclick="triggerVerificationButton('${deal.code}', '${deal.restaurant}')" title="Run diagnostic verification" class="bg-stone-100 hover:bg-amber-100 text-stone-700 hover:text-amber-900 font-bold text-xs px-3 py-2 rounded-xl border border-stone-200 transition flex items-center gap-1.5">
+                                            <i class="fa-solid fa-microchip"></i> Verify
+                                        </button>
+                                    ` : ''}
+                                    ${codeBlock}
+                                </div>
                             </div>
-                            <div class="flex items-center gap-2">
-                                ${deal.code && !isNoCode ? `
-                                    <button onclick="triggerVerificationButton('${deal.code}', '${deal.restaurant}')" class="bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 font-bold text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 hover:border-amber-200 transition duration-150 flex items-center gap-1.5">
-                                        <i class="fa-solid fa-microchip"></i> Verify Code
-                                    </button>
-                                ` : ''}
-                                ${codeBlock}
-                            </div>
-                        </div>
 
-                        <!-- Accordion Guide (Beginner Friendly) -->
-                        <div class="mt-4 border-t border-slate-50 pt-3">
-                            <details class="group/details">
-                                <summary class="list-none flex items-center justify-between text-xs font-bold text-slate-400 hover:text-slate-700 cursor-pointer select-none">
-                                    <span>HOW TO REDEEM (STEP-BY-STEP)</span>
-                                    <i class="fa-solid fa-chevron-down group-open/details:rotate-180 transition-transform duration-200"></i>
+                            <!-- Beginner Step-by-Step Accordion -->
+                            <details class="group/details bg-stone-50/80 border border-stone-200 rounded-2xl overflow-hidden transition-all duration-200">
+                                <summary class="list-none flex items-center justify-between p-3.5 text-xs font-bold text-stone-600 hover:text-stone-950 cursor-pointer select-none">
+                                    <span class="flex items-center gap-2">
+                                        <i class="fa-solid fa-book-open-reader text-amber-700"></i> HOW TO REDEEM (BEGINNER STEP-BY-STEP)
+                                    </span>
+                                    <i class="fa-solid fa-chevron-down text-stone-400 group-open/details:rotate-180 transition-transform duration-200"></i>
                                 </summary>
-                                <div class="mt-3 bg-slate-50 border border-slate-100 rounded-2xl p-4 text-xs text-slate-600 leading-relaxed whitespace-pre-line font-medium">
+                                <div class="p-4 pt-1 text-xs text-stone-600 leading-relaxed whitespace-pre-line border-t border-stone-200/60 font-medium">
                                     ${deal.beginner_guide}
-                                    <div class="mt-3 flex items-center justify-end gap-2 border-t border-slate-100 pt-2.5">
-                                        <a href="${deal.source_url}" target="_blank" class="text-amber-700 font-bold flex items-center gap-1 hover:underline">
-                                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Visit Official Promo Page
+                                    <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-stone-200/60 pt-3">
+                                        <span class="text-[10px] text-stone-400">Last verified: ${deal.last_verified}</span>
+                                        <a href="${deal.source_url}" target="_blank" class="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                                            <span>Visit Official Site</span>
+                                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
                                         </a>
                                     </div>
                                 </div>
@@ -527,23 +787,54 @@
             }).join('');
         }
 
-        // Copy code script
+        function clearAllFilters() {
+            filterRes = 'All';
+            filterTypeVal = 'All';
+            searchQuery = '';
+            document.getElementById('deal-search-input').value = '';
+            document.getElementById('clear-search-btn').classList.add('hidden');
+            
+            document.querySelectorAll('.rest-filter').forEach(btn => {
+                if (btn.innerText.includes('All')) {
+                    btn.classList.add('bg-stone-900', 'text-white');
+                    btn.classList.remove('bg-stone-100', 'text-stone-700');
+                } else {
+                    btn.classList.remove('bg-stone-900', 'text-white');
+                    btn.classList.add('bg-stone-100', 'text-stone-700');
+                }
+            });
+
+            document.querySelectorAll('.type-filter').forEach(btn => {
+                if (btn.innerText.includes('All')) {
+                    btn.classList.add('bg-stone-900', 'text-white');
+                    btn.classList.remove('bg-stone-100', 'text-stone-700');
+                } else {
+                    btn.classList.remove('bg-stone-900', 'text-white');
+                    btn.classList.add('bg-stone-100', 'text-stone-700');
+                }
+            });
+
+            renderDeals();
+        }
+
+        // Copy coupon code to clipboard
         function copyCode(btn, text) {
             navigator.clipboard.writeText(text);
             const originalHTML = btn.innerHTML;
             btn.innerHTML = `<i class="fa-solid fa-check text-emerald-600"></i> Copied!`;
-            btn.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-800');
+            btn.classList.add('bg-emerald-50', 'border-emerald-300', 'text-emerald-900');
+            showToast(`Promo code '${text}' copied to clipboard! Paste at checkout.`, 'success');
             setTimeout(() => {
                 btn.innerHTML = originalHTML;
-                btn.classList.remove('bg-emerald-50', 'border-emerald-200', 'text-emerald-800');
-            }, 1500);
+                btn.classList.remove('bg-emerald-50', 'border-emerald-300', 'text-emerald-900');
+            }, 2000);
         }
 
-        // Tab Switching
+        // Tab Navigation
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active', 'border-amber-600', 'text-slate-800', 'font-bold');
-                btn.classList.add('border-transparent', 'text-slate-500', 'font-medium');
+                btn.classList.remove('active', 'border-amber-600', 'text-stone-900');
+                btn.classList.add('border-transparent', 'text-stone-500');
             });
             document.querySelectorAll('.tab-sect').forEach(sect => {
                 sect.classList.add('hidden');
@@ -551,14 +842,19 @@
             });
 
             const actBtn = document.getElementById(`tab-${tabId}`);
-            actBtn.classList.add('active', 'border-amber-600', 'text-slate-800', 'font-bold');
-            actBtn.classList.remove('border-transparent', 'text-slate-500', 'font-medium');
+            if (actBtn) {
+                actBtn.classList.add('active', 'border-amber-600', 'text-stone-900');
+                actBtn.classList.remove('border-transparent', 'text-stone-500');
+            }
 
-            document.getElementById(`sect-${tabId}`).classList.remove('hidden');
-            document.getElementById(`sect-${tabId}`).classList.add('block');
+            const actSect = document.getElementById(`sect-${tabId}`);
+            if (actSect) {
+                actSect.classList.remove('hidden');
+                actSect.classList.add('block');
+            }
         }
 
-        // Load Store List from SF Database
+        // Load SF Store List
         async function loadStores() {
             try {
                 const response = await fetch('/api/stores');
@@ -569,18 +865,28 @@
                 chipList.innerHTML = storeData.Chipotle.map(store => {
                     const searchAddress = encodeURIComponent(`${store.address}, San Francisco, CA ${store.zip}`);
                     return `
-                        <div class="border border-slate-100 p-4 rounded-2xl hover:bg-slate-50 transition duration-150">
-                            <h4 class="font-bold text-sm text-slate-900 flex items-center gap-1.5">
-                                <i class="fa-solid fa-store text-amber-800 text-xs"></i> ${store.name}
-                            </h4>
-                            <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-map-pin text-[10px] mr-1 text-slate-400"></i> ${store.address}, San Francisco, CA ${store.zip}</p>
-                            <p class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-phone text-[10px] mr-1 text-slate-400"></i> Phone: ${store.phone}</p>
-                            <div class="mt-3 flex gap-2">
-                                <a href="https://locations.chipotle.com/ca/san-francisco" target="_blank" class="bg-slate-100 hover:bg-slate-200 border border-slate-200 font-bold text-[10px] px-3 py-1.5 rounded-lg transition text-slate-700 flex items-center gap-1">
-                                    <i class="fa-solid fa-circle-info"></i> Store Menu
+                        <div class="border border-stone-200 p-4 rounded-2xl hover:bg-stone-50/80 transition duration-150">
+                            <div class="flex items-start justify-between gap-2">
+                                <div>
+                                    <h4 class="font-extrabold text-sm text-stone-900 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-store text-red-800 text-xs"></i> ${store.name}
+                                    </h4>
+                                    <span class="inline-block bg-stone-100 text-stone-600 font-bold text-[10px] px-2 py-0.5 rounded-md mt-1 border border-stone-200">
+                                        ${store.neighborhood}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <p class="text-xs text-stone-600 mt-2"><i class="fa-solid fa-location-dot text-[10px] mr-1.5 text-stone-400"></i> ${store.address}, San Francisco, CA ${store.zip}</p>
+                            <p class="text-xs text-stone-600 mt-1"><i class="fa-solid fa-phone text-[10px] mr-1.5 text-stone-400"></i> <a href="tel:${store.phone.replace(/[^0-9]/g, '')}" class="hover:underline font-medium text-stone-800">${store.phone}</a></p>
+                            <p class="text-[11px] text-stone-500 mt-1"><i class="fa-regular fa-clock text-[10px] mr-1.5 text-stone-400"></i> ${store.hours}</p>
+
+                            <div class="mt-3 flex gap-2 pt-2 border-t border-stone-100">
+                                <a href="${store.online_order_url}" target="_blank" class="bg-stone-100 hover:bg-stone-200 border border-stone-200 font-bold text-[11px] px-3 py-1.5 rounded-lg transition text-stone-700 flex items-center gap-1">
+                                    <i class="fa-solid fa-cart-shopping"></i> Order Pickup
                                 </a>
-                                <a href="https://www.google.com/maps/search/?api=1&query=${searchAddress}" target="_blank" class="bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-[10px] px-3 py-1.5 rounded-lg transition flex items-center gap-1">
-                                    <i class="fa-solid fa-route"></i> Map Directions
+                                <a href="https://www.google.com/maps/search/?api=1&query=${searchAddress}" target="_blank" class="bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 font-bold text-[11px] px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+                                    <i class="fa-solid fa-route"></i> Directions
                                 </a>
                             </div>
                         </div>
@@ -592,18 +898,28 @@
                 wingList.innerHTML = storeData.Wingstop.map(store => {
                     const searchAddress = encodeURIComponent(`${store.address}, San Francisco, CA ${store.zip}`);
                     return `
-                        <div class="border border-slate-100 p-4 rounded-2xl hover:bg-slate-50 transition duration-150">
-                            <h4 class="font-bold text-sm text-slate-900 flex items-center gap-1.5">
-                                <i class="fa-solid fa-store text-emerald-800 text-xs"></i> ${store.name}
-                            </h4>
-                            <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-map-pin text-[10px] mr-1 text-slate-400"></i> ${store.address}, San Francisco, CA ${store.zip}</p>
-                            <p class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-phone text-[10px] mr-1 text-slate-400"></i> Phone: ${store.phone}</p>
-                            <div class="mt-3 flex gap-2">
-                                <a href="https://locations.wingstop.com/us/ca/san-francisco" target="_blank" class="bg-slate-100 hover:bg-slate-200 border border-slate-200 font-bold text-[10px] px-3 py-1.5 rounded-lg transition text-slate-700 flex items-center gap-1">
-                                    <i class="fa-solid fa-circle-info"></i> Store Menu
+                        <div class="border border-stone-200 p-4 rounded-2xl hover:bg-stone-50/80 transition duration-150">
+                            <div class="flex items-start justify-between gap-2">
+                                <div>
+                                    <h4 class="font-extrabold text-sm text-stone-900 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-store text-emerald-800 text-xs"></i> ${store.name}
+                                    </h4>
+                                    <span class="inline-block bg-emerald-50 text-emerald-900 font-bold text-[10px] px-2 py-0.5 rounded-md mt-1 border border-emerald-200">
+                                        ${store.neighborhood}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <p class="text-xs text-stone-600 mt-2"><i class="fa-solid fa-location-dot text-[10px] mr-1.5 text-stone-400"></i> ${store.address}, San Francisco, CA ${store.zip}</p>
+                            <p class="text-xs text-stone-600 mt-1"><i class="fa-solid fa-phone text-[10px] mr-1.5 text-stone-400"></i> <a href="tel:${store.phone.replace(/[^0-9]/g, '')}" class="hover:underline font-medium text-stone-800">${store.phone}</a></p>
+                            <p class="text-[11px] text-stone-500 mt-1"><i class="fa-regular fa-clock text-[10px] mr-1.5 text-stone-400"></i> ${store.hours}</p>
+
+                            <div class="mt-3 flex gap-2 pt-2 border-t border-stone-100">
+                                <a href="${store.online_order_url}" target="_blank" class="bg-stone-100 hover:bg-stone-200 border border-stone-200 font-bold text-[11px] px-3 py-1.5 rounded-lg transition text-stone-700 flex items-center gap-1">
+                                    <i class="fa-solid fa-cart-shopping"></i> Order Pickup
                                 </a>
-                                <a href="https://www.google.com/maps/search/?api=1&query=${searchAddress}" target="_blank" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-950 font-bold text-[10px] px-3 py-1.5 rounded-lg transition flex items-center gap-1">
-                                    <i class="fa-solid fa-route"></i> Map Directions
+                                <a href="https://www.google.com/maps/search/?api=1&query=${searchAddress}" target="_blank" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-200 font-bold text-[11px] px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+                                    <i class="fa-solid fa-route"></i> Directions
                                 </a>
                             </div>
                         </div>
@@ -622,6 +938,7 @@
             const type = document.getElementById('sub-type').value;
             const code = document.getElementById('sub-code').value;
             const title = document.getElementById('sub-title').value;
+            const savings = document.getElementById('sub-savings').value;
             const description = document.getElementById('sub-description').value;
             const source_url = document.getElementById('sub-source').value;
 
@@ -632,31 +949,29 @@
                 const response = await fetch('/api/submit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ restaurant, type, code, title, description, source_url })
+                    body: JSON.stringify({ restaurant, type, code, title, savings, description, source_url })
                 });
 
                 const data = await response.json();
                 loading.classList.add('hidden');
 
                 if (response.ok) {
-                    alert("Awesome! " + data.message);
+                    showToast(data.message, 'success');
                     document.getElementById('submit-deal-form').reset();
-                    // Reload and render
                     await fetchDeals();
                     switchTab('deals');
-                    // Scroll to the verified deal
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
-                    alert("Error: " + data.message);
+                    showToast(data.message || "Failed to submit deal.", 'error');
                 }
             } catch (err) {
                 console.error("Submission failed:", err);
                 loading.classList.add('hidden');
-                alert("Something went wrong with the submission process.");
+                showToast("Network error submitting deal.", 'error');
             }
         }
 
-        // Trigger validator scroll and preset inputs
+        // Trigger validator scroll and pre-fill input
         function triggerVerificationButton(code, restaurant) {
             document.getElementById('val-restaurant').value = restaurant;
             document.getElementById('val-code').value = code;
@@ -667,13 +982,13 @@
             runCustomValidator();
         }
 
-        // Run the interactive automated diagnostic verifier on a code
+        // Run interactive automated diagnostic verifier
         async function runCustomValidator() {
             const code = document.getElementById('val-code').value.trim();
             const restaurant = document.getElementById('val-restaurant').value;
 
             if (!code) {
-                alert("Please enter a coupon code to validate!");
+                showToast("Please enter a promo code to validate!", 'error');
                 return;
             }
 
@@ -687,7 +1002,7 @@
             termOutput.innerHTML = '';
             timerEl.innerText = "0.0s";
 
-            // Make the server request
+            // Server request
             let verificationResult = null;
             try {
                 const res = await fetch('/api/verify', {
@@ -697,22 +1012,22 @@
                 });
                 verificationResult = await res.json();
             } catch (err) {
-                console.error("Verification endpoint down:", err);
+                console.error("Verification endpoint error:", err);
             }
 
             if (!verificationResult || !verificationResult.logs) {
-                termOutput.innerHTML = `<span class="text-rose-500">❌ SYSTEM FAULT: Unable to initialize automated validator engine threads.</span>`;
+                termOutput.innerHTML = `<span class="text-rose-400 font-bold">❌ SYSTEM FAULT: Unable to reach validation engine.</span>`;
                 return;
             }
 
-            // Stream logs visually like a high-tech terminal
+            // Stream diagnostic logs
             let logIndex = 0;
             let startTime = Date.now();
             
             const intervalId = setInterval(() => {
                 const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
                 timerEl.innerText = `${elapsed}s`;
-            }, 100);
+            }, 80);
 
             function streamNextLog() {
                 if (logIndex < verificationResult.logs.length) {
@@ -720,15 +1035,14 @@
                     let lineClass = 'text-slate-300';
                     if (line.includes('✅') || line.includes('🟢')) lineClass = 'text-emerald-400 font-bold';
                     if (line.includes('❌')) lineClass = 'text-rose-400 font-bold';
-                    if (line.includes('⚠️')) lineClass = 'text-amber-400 font-semibold';
-                    if (line.includes('📡') || line.includes('⏱️') || line.includes('🔍')) lineClass = 'text-sky-300 font-bold';
+                    if (line.includes('⚠️') || line.includes('💡')) lineClass = 'text-amber-400 font-semibold';
+                    if (line.includes('📡') || line.includes('⏱️') || line.includes('🔍') || line.includes('📍') || line.includes('🗺️')) lineClass = 'text-sky-300 font-bold';
 
-                    termOutput.innerHTML += `<div class="${lineClass} transition-opacity duration-200 opacity-100">${line}</div>`;
+                    termOutput.innerHTML += `<div class="${lineClass} transition-opacity duration-150">${line}</div>`;
                     termOutput.scrollTop = termOutput.scrollHeight;
                     logIndex++;
                     
-                    // Add slight random delay to simulate realistic diagnostics
-                    setTimeout(streamNextLog, 250 + Math.random() * 200);
+                    setTimeout(streamNextLog, 150 + Math.random() * 120);
                 } else {
                     clearInterval(intervalId);
                     displayValidationResults(verificationResult, restaurant, code);
@@ -738,11 +1052,12 @@
             streamNextLog();
         }
 
-        // Render Results at the end of the Terminal Stream
+        // Render Results at end of terminal run
         function displayValidationResults(res, restaurant, code) {
             const resCard = document.getElementById('validation-result-card');
             const iconBox = document.getElementById('val-result-icon');
             const titleBox = document.getElementById('val-result-title');
+            const savingsBox = document.getElementById('val-result-savings');
             const exclBox = document.getElementById('val-result-exclusions');
             const badgeBox = document.getElementById('val-result-badges');
             const actBox = document.getElementById('val-result-action');
@@ -754,16 +1069,17 @@
                 iconBox.innerHTML = `<i class="fa-solid fa-circle-check"></i>`;
                 
                 titleBox.innerText = `Verified Valid: ${res.title}`;
-                exclBox.innerHTML = `<strong>Exclusions:</strong> ${res.exclusions || 'None'}<br><strong class="mt-1 block">Valid at SF locations:</strong> ${res.participating_stores.join(', ')}`;
+                savingsBox.innerText = res.savings ? `Savings: ${res.savings}` : '';
+                exclBox.innerHTML = `<strong>Terms / Exclusions:</strong> ${res.exclusions || 'None'}<br><strong class="mt-1 block text-emerald-800">Participating SF locations (${res.participating_stores.length}):</strong> ${res.participating_stores.join(', ')}`;
                 
                 badgeBox.innerHTML = `
-                    <span class="bg-emerald-100 text-emerald-900 border border-emerald-200 text-[10px] font-extrabold px-2.5 py-0.5 rounded-lg uppercase">ACTIVE & VERIFIED</span>
-                    <span class="bg-slate-100 text-slate-800 text-[10px] font-bold px-2.5 py-0.5 rounded-lg uppercase">EXPIRES ${res.expiration}</span>
+                    <span class="bg-emerald-100 text-emerald-950 border border-emerald-300 text-[10px] font-extrabold px-2.5 py-0.5 rounded-lg uppercase">ACTIVE & AUDITED</span>
+                    <span class="bg-stone-200 text-stone-800 text-[10px] font-bold px-2.5 py-0.5 rounded-lg uppercase">EXPIRES ${res.expiration}</span>
                 `;
 
                 const promoLink = res.source || (restaurant === 'Chipotle' ? 'https://www.chipotle.com' : 'https://www.wingstop.com');
                 actBox.innerHTML = `
-                    <a href="${promoLink}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition duration-150 text-center flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/10">
+                    <a href="${promoLink}" target="_blank" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition duration-150 text-center flex items-center justify-center gap-1.5 shadow-md shadow-emerald-700/20">
                         <i class="fa-solid fa-cart-shopping"></i> Order & Apply Code
                     </a>
                 `;
@@ -771,16 +1087,17 @@
                 iconBox.className = "h-12 w-12 rounded-xl flex items-center justify-center text-lg mt-0.5 bg-rose-50 text-rose-800 border border-rose-200";
                 iconBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i>`;
                 
-                titleBox.innerText = `Verification Failed: ${code.toUpperCase()}`;
+                titleBox.innerText = `Verification Alert: ${code.toUpperCase()}`;
+                savingsBox.innerText = '';
                 exclBox.innerText = res.message;
                 
                 badgeBox.innerHTML = `
-                    <span class="bg-rose-100 text-rose-900 border border-rose-200 text-[10px] font-extrabold px-2.5 py-0.5 rounded-lg uppercase">NOT APPLICABLE</span>
-                    <span class="bg-slate-100 text-slate-800 text-[10px] font-bold px-2.5 py-0.5 rounded-lg uppercase">CA SF BLOCKED</span>
+                    <span class="bg-rose-100 text-rose-900 border border-rose-200 text-[10px] font-extrabold px-2.5 py-0.5 rounded-lg uppercase">${res.status ? res.status.toUpperCase() : 'INVALID'}</span>
+                    <span class="bg-stone-200 text-stone-800 text-[10px] font-bold px-2.5 py-0.5 rounded-lg uppercase">NOT APPLICABLE IN SF</span>
                 `;
 
                 actBox.innerHTML = `
-                    <a href="#tab-deals" onclick="switchTab('deals')" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition duration-150 text-center">
+                    <a href="#sect-deals" onclick="switchTab('deals')" class="bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition duration-150 text-center">
                         View Working Deals Instead
                     </a>
                 `;
